@@ -11,7 +11,7 @@ client_socket.connect((HOST, PORT))
 print(f"Connected to {HOST}:{PORT}")
 
 # TODO: replace with request to retrieve data
-message = "Hello, server! This is the client."
+message = "1"
 client_socket.send(message.encode())
 
 # Receive and print the echoed response
