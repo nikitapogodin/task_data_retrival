@@ -19,14 +19,14 @@ int DataServer::getDataForSource(int index) const {
     auto diff = now - data.ts;
     std::cout << "Data = " << data.data
               << ", Age = " << std::chrono::duration_cast<std::chrono::milliseconds>(diff).count()
-              << std::endl;
+              << ". ";
 
     // Check lifetime
     if (diff > std::chrono::milliseconds(lifetime_ms_)) {
         std::cout << "Data is outdated" << std::endl;
         throw DataOutdatedException(index);
     } else {
-        std::cout << "Data is ok" << std::endl;
+        std::cout << "OK" << std::endl;
     }
 
     return data.data;

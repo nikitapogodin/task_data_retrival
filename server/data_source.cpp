@@ -6,12 +6,10 @@
 
 namespace server {
 
-using namespace std::chrono_literals;
-constexpr std::chrono::duration RETRIVAL_DELAY = 500ms;
-constexpr std::chrono::duration UPDATE_INTERVAL = 1s;
-
-DataSource::DataSource() {
-    std::cout << "Create data source" << std::endl;
+DataSource::DataSource(int change_interval_ms, int retrival_delay_ms) :
+    change_interval_ms_(change_interval_ms), retrival_delay_ms_(retrival_delay_ms) {
+    std::cout << "Create data source with change interval " << change_interval_ms_
+              << " ms, retrival delay " << retrival_delay_ms_ << " ms" << std::endl;
     // Data inside DataSource class changes at regular interval
     thread_ = std::thread([this]() { changeData(); });
 }
@@ -27,14 +25,14 @@ DataSource::~DataSource() {
 int DataSource::getData() const {
     // Data retrival process has some considerable delay
     using namespace std::chrono_literals;
-    std::this_thread::sleep_for(RETRIVAL_DELAY);
+    std::this_thread::sleep_for(std::chrono::milliseconds(retrival_delay_ms_));
 
     return data_;
 }
 
 void DataSource::changeData() {
     while (!stop_flag_) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(UPDATE_INTERVAL));
+        std::this_thread::sleep_for(std::chrono::milliseconds(change_interval_ms_));
 
         // Change data
         std::random_device dev;

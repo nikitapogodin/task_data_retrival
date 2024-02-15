@@ -16,6 +16,14 @@ int processRequest(const char* buffer) {
     return std::stoi(buffer);
 }
 
+std::string makeOkResponse(int data) {
+    return R"({"status": "OK", "data": )" + std::to_string(data) + "}";
+}
+
+std::string makeErrorResponse(const std::string& message) {
+    return R"({"status": ")" + message + R"(", "data": null})";
+}
+
 void start_serve(int server_socket, server::DataServer& data_server) {
     // Accept connections and handle data
     while (true) {
@@ -46,13 +54,14 @@ void start_serve(int server_socket, server::DataServer& data_server) {
             std::string response;
             try {
                 auto data = data_server.getDataForSource(index);
-                response = std::to_string(data);
+                response = makeOkResponse(data);
             } catch (std::exception& ex) {
                 std::cout << "Failed to process request: " << ex.what() << std::endl;
-                response = ex.what();
+                response = makeErrorResponse(ex.what());
             }
 
             // Send response
+            std::cout << "Sending to client: " << response << std::endl;
             send(client_socket, response.c_str(), response.size(), 0);
         }
 
@@ -69,7 +78,7 @@ int main(int argc, char** argv) {
     int option_index{0};
     int port{8080};
     int number_data_sources{2};
-    int data_lifetime{500};
+    int data_lifetime{250};
 
     static struct option long_options[] = {
         {"port", required_argument, nullptr, 'p'},
@@ -96,9 +105,13 @@ int main(int argc, char** argv) {
     }
 
     // Create data sources & server
+    constexpr int retrival_delay_ms = 500;
+    constexpr int change_interval_ms = 1000;
+
     std::vector<std::unique_ptr<server::DataSource>> sources;
     for (int i = 0; i < number_data_sources; ++i) {
-        sources.emplace_back(std::make_unique<server::DataSource>());
+        sources.emplace_back(
+            std::make_unique<server::DataSource>(change_interval_ms, retrival_delay_ms));
     }
     auto data_cache = std::make_unique<server::DataCache>(std::move(sources));
     server::DataServer data_server(std::move(data_cache), data_lifetime);

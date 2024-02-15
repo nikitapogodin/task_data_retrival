@@ -11,7 +11,7 @@ namespace server {
 // data retrival process has some considerable delay
 class DataSource {
 public:
-    DataSource();
+    DataSource(int change_interval_ms, int retrival_delay_ms);
     ~DataSource();
 
     int getData() const;
@@ -20,6 +20,9 @@ private:
     void changeData();
 
 private:
+    int change_interval_ms_;
+    int retrival_delay_ms_;
+
     std::atomic<int> data_ = 0;
 
     // Data change thread
